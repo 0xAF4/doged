@@ -8,8 +8,10 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"time"
 
 	"github.com/0xaf4/doged/chaincfg/chainhash"
+	"github.com/dogecoinfoundation/gigawallet/pkg/doge"
 )
 
 // defaultTransactionAlloc is the default size used for the backing array
@@ -68,6 +70,57 @@ func (msg *MsgBlock) ClearTransactions() {
 // See Deserialize for decoding blocks stored to disk, such as in a database, as
 // opposed to decoding blocks from the wire.
 func (msg *MsgBlock) BtcDecode(r io.Reader, pver uint32, enc MessageEncoding) error {
+	bytes, _ := io.ReadAll(r)
+	block, err := doge.DecodeBlock(bytes, "test block", true)
+	if err != nil {
+		return err
+	}
+
+	/*--- Заполнение хидера ---*/
+	msg.Header.Version = int32(block.Header.Version)
+	copy(msg.Header.PrevBlock[:], block.Header.PrevBlock)
+	copy(msg.Header.MerkleRoot[:], block.Header.MerkleRoot)
+	msg.Header.Timestamp = time.Unix(int64(block.Header.Timestamp), 0).UTC()
+	msg.Header.Bits = block.Header.Bits
+	msg.Header.Nonce = block.Header.Nonce
+
+	for _, tx := range block.Tx {
+		var (
+			arrTxIn  []*TxIn
+			arrTxOut []*TxOut
+		)
+		for _, in := range tx.VIn {
+			localTxIn := &TxIn{
+				TxID:            in.TxID,
+				VOut:            in.VOut,
+				SignatureScript: in.Script,
+				Sequence:        in.Sequence,
+				Witness:         in.Witness,
+			}
+
+			arrTxIn = append(arrTxIn, localTxIn)
+		}
+
+		for _, out := range tx.VOut {
+			arrTxOut = append(arrTxOut, &TxOut{
+				Value:    out.Value,
+				PkScript: out.Script,
+			})
+		}
+
+		msg.AddTransaction(&MsgTx{
+			Version:  int32(tx.Version),
+			TxID:     tx.TxID,
+			LockTime: tx.LockTime,
+			TxIn:     arrTxIn,
+			TxOut:    arrTxOut,
+		})
+	}
+
+	return nil
+}
+
+func (msg *MsgBlock) BtcDecodeDeprecated(r io.Reader, pver uint32, enc MessageEncoding) error {
 	err := readBlockHeader(r, pver, &msg.Header)
 	if err != nil {
 		return err

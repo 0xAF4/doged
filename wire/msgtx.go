@@ -262,6 +262,8 @@ func (o OutPoint) String() string {
 // TxIn defines a litecoin transaction input.
 type TxIn struct {
 	PreviousOutPoint OutPoint
+	TxID             []byte // 32 bytes
+	VOut             uint32
 	SignatureScript  []byte
 	Witness          TxWitness
 	Sequence         uint32
@@ -346,6 +348,7 @@ type MsgTx struct {
 	LockTime uint32
 	IsHogEx  bool
 	Mweb     *MwebTx
+	TxID     string
 }
 
 // AddTxIn adds a transaction input to the message.
