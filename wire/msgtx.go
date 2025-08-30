@@ -369,13 +369,9 @@ func (msg *MsgTx) TxHash() chainhash.Hash {
 	// cause a run-time panic.
 
 	// A pure-MW tx can only be in mempool or the EB, not the canonical block.
-	if msg.Mweb != nil && len(msg.TxIn) == 0 && len(msg.TxOut) == 0 {
-		return *msg.Mweb.TxBody.Kernels[0].Hash()
-	}
 
-	buf := bytes.NewBuffer(make([]byte, 0, msg.SerializeSizeStripped()))
-	_ = msg.SerializeNoWitness(buf)
-	return chainhash.DoubleHashH(buf.Bytes())
+	hash, _ := chainhash.NewHashFromStr(msg.TxID)
+	return *hash
 }
 
 // WitnessHash generates the hash of the transaction serialized according to

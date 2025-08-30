@@ -52,7 +52,7 @@ func TestBlock(t *testing.T) {
 	fmt.Println("block hash:", block.BlockHash().String())
 	fmt.Println("tx count:", len(block.Transactions))
 	for i, tx := range block.Transactions {
-		fmt.Printf(" tx %d hash: %s\n", i, tx.TxID)
+		fmt.Printf(" tx %d hash: %s\n", i, tx.TxHash().String())
 		for j, txOut := range tx.TxOut {
 			fmt.Printf("  txOut %d: Script %s:%.8f\n", j, convertAddress(txOut.PkScript), ltcutil.Amount(txOut.Value).ToBTC())
 		}

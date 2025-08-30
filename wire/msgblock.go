@@ -110,8 +110,8 @@ func (msg *MsgBlock) BtcDecode(r io.Reader, pver uint32, enc MessageEncoding) er
 
 		msg.AddTransaction(&MsgTx{
 			Version:  int32(tx.Version),
-			TxID:     tx.TxID,
 			LockTime: tx.LockTime,
+			TxID:     tx.TxID,
 			TxIn:     arrTxIn,
 			TxOut:    arrTxOut,
 		})
